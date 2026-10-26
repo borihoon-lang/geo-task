@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>한국지리탐구 수행평가</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; word-break: keep-all; }
+    textarea { resize: vertical; }
+    /* 모바일 자동 확대 방지 */
+    input[type="text"], input[type="password"], textarea { font-size: 16px !important; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+  <script>
+    // ★ 1단계에서 복사한 구글 앱스 스크립트 URL을 아래 따옴표 안에 꼭 붙여넣으세요! ★
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyZi62ppuLSrlBaEzslWnq0RX3hqWCWlELfrW06-ND72tW5GMVmonqMlrvIiR-QW-EmqA/exec";
+    const TEACHER_PW = "7248";
+  </script>
+
+  <!-- ================= 1. 학생 메인 / 제출 화면 ================= -->
+  <div id="studentView" class="w-full max-w-3xl mx-auto py-6 px-4">
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+      
+      <!-- 헤더 및 교사 모드 진입 버튼 (숨김 처리) -->
+      <div class="bg-blue-900 text-white p-6 relative text-center">
+        <!-- 우측 상단 작고 은은한 선생님 접속 버튼 -->
+        <button onclick="promptTeacherPw()" class="absolute top-4 right-4 text-[11px] text-blue-300 hover:text-white bg-white/10 px-2.5 py-1 rounded cursor-pointer transition">
+          선생님 대시보드 🔐
+        </button>
+        <span class="inline-block bg-blue-700 text-blue-100 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">2015 개정 교육과정</span>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">한국지리탐구 수행평가</h1>
+        <p class="mt-2 text-blue-200 text-sm">학습지를 참고하여 아래 3가지 문항에 자신의 생각을 작성해 주세요.</p>
+      </div>
+
+      <form id="evalForm" onsubmit="submitData(event)" class="p-6 space-y-6">
+        <!-- 인적사항 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <label for="studentId" class="block text-sm font-bold text-slate-900 mb-1">학번 <span class="text-red-500">*</span></label>
+            <input type="text" id="studentId" required placeholder="예: 30101" inputmode="numeric" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none">
+          </div>
+          <div>
+            <label for="studentName" class="block text-sm font-bold text-slate-900 mb-1">이름 <span class="text-red-500">*</span></label>
+            <input type="text" id="studentName" required placeholder="이름 입력" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none">
+          </div>
+        </div>
+
+        <!-- 3문항 입력 -->
+        <div class="space-y-5">
+          <div class="space-y-1.5">
+            <label for="q1" class="block font-bold text-slate-900">[문항 1]에 대한 답안을 작성하세요. <span class="text-red-500">*</span></label>
+            <textarea id="q1" rows="4" required placeholder="문항 1번 답안 입력" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"></textarea>
+          </div>
+          <div class="space-y-1.5">
+            <label for="q2" class="block font-bold text-slate-900">[문항 2]에 대한 답안을 작성하세요. <span class="text-red-500">*</span></label>
+            <textarea id="q2" rows="4" required placeholder="문항 2번 답안 입력" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"></textarea>
+          </div>
+          <div class="space-y-1.5">
+            <label for="q3" class="block font-bold text-slate-900">[문항 3]에 대한 답안을 작성하세요. <span class="text-red-500">*</span></label>
+            <textarea id="q3" rows="4" required placeholder="문항 3번 답안 입력" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"></textarea>
+          </div>
+        </div>
+
+        <!-- 제출 버튼 -->
+        <button type="submit" id="submitBtn" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-lg rounded-xl shadow-lg transition cursor-pointer">
+          답안 최종 제출하기
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 2. 제출 완료 화면 ================= -->
+  <div id="completeView" class="hidden min-h-screen flex flex-col justify-center items-center px-4">
+    <div class="text-center space-y-4 max-w-sm mx-auto">
+      <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h1 class="text-3xl font-extrabold text-slate-900">수고하셨습니다.</h1>
+      <p class="text-slate-600 font-medium">한국지리탐구 수행평가 답안이 서버에 안전하게 저장되었습니다.<br>이 창을 닫으셔도 좋습니다.</p>
+    </div>
+  </div>
+
+  <!-- ================= 3. 비밀번호 확인 모달 ================= -->
+  <div id="pwModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl w-full max-w-xs p-6 text-center space-y-4 shadow-2xl">
+      <h3 class="font-bold text-slate-900">교사 전용 대시보드 인증</h3>
+      <input type="password" id="inputPw" placeholder="비밀번호 입력" inputmode="numeric" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-center tracking-widest focus:ring-2 focus:ring-slate-900 outline-none bg-slate-50">
+      <div class="flex gap-2">
+        <button onclick="closePwModal()" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-sm font-bold cursor-pointer transition">취소</button>
+        <button onclick="checkPw()" class="flex-1 py-2 bg-slate-900 text-white hover:bg-slate-800 rounded-lg text-sm font-bold cursor-pointer transition">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 4. 교사용 통합 대시보드 ================= -->
+  <div id="teacherView" class="hidden w-full max-w-6xl mx-auto py-6 px-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      
+      <!-- 대시보드 헤더 -->
+      <div class="bg-slate-900 text-white p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 class="text-xl font-bold">한국지리탐구 실시간 데이터 대시보드</h2>
+          <p class="text-xs text-slate-300 mt-1">구글 시트에 누적된 학생 제출 답안을 열람하고 엑셀로 다운로드합니다.</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button onclick="fetchData()" class="flex-1 sm:flex-initial text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2.5 rounded-lg font-bold transition cursor-pointer">🔄 새로고침</button>
+          <button onclick="downloadCSV()" class="flex-1 sm:flex-initial text-xs bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-lg font-bold shadow transition cursor-pointer">📥 엑셀(CSV) 다운로드</button>
+          <button onclick="exitTeacherMode()" class="flex-1 sm:flex-initial text-xs bg-red-600 hover:bg-red-500 px-4 py-2.5 rounded-lg font-bold transition cursor-pointer">나가기</button>
+        </div>
+      </div>
+
+      <!-- 데이터 탐색 테이블 -->
+      <div class="p-4 overflow-x-auto">
+        <table class="w-full min-w-[900px] text-sm text-left border-collapse">
+          <thead class="bg-slate-100 text-slate-700">
+            <tr>
+              <th class="p-3 border font-bold w-32">제출일시</th>
+              <th class="p-3 border font-bold w-20">학번</th>
+              <th class="p-3 border font-bold w-24">이름</th>
+              <th class="p-3 border font-bold w-1/3">문항 1 답안</th>
+              <th class="p-3 border font-bold w-1/3">문항 2 답안</th>
+              <th class="p-3 border font-bold w-1/3">문항 3 답안</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="text-slate-800">
+            <tr><td colspan="6" class="p-6 text-center text-slate-500">데이터를 불러오는 중입니다...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let studentDataList = [];
+
+    // [1] 학생 데이터 서버 제출
+    async function submitData(e) {
+      e.preventDefault();
+      
+      if (!SCRIPT_URL || SCRIPT_URL.includes("여기에_구글")) {
+        alert("선생님, 아직 코드 상단에 SCRIPT_URL이 입력되지 않았습니다!\n구글 앱스 스크립트 주소를 연결해야 학생들이 데이터를 제출할 수 있습니다.");
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = "클라우드 서버에 안전하게 저장 중...";
+
+      const payload = {
+        studentId: document.getElementById('studentId').value.trim(),
+        studentName: document.getElementById('studentName').value.trim(),
+        q1: document.getElementById('q1').value.trim(),
+        q2: document.getElementById('q2').value.trim(),
+        q3: document.getElementById('q3').value.trim()
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          // CORS 우회를 위해 text/plain으로 전송
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        
+        // 제출 성공 시 화면 전환
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('completeView').classList.remove('hidden');
+        window.scrollTo(0, 0);
+      } catch (err) {
+        alert("네트워크 오류로 서버 전송에 실패했습니다. 다시 시도해 주세요.");
+        btn.disabled = false;
+        btn.innerText = "답안 최종 제출하기";
+      }
+    }
+
+    // [2] 교사 인증 모달 제어
+    function promptTeacherPw() {
+      document.getElementById('inputPw').value = '';
+      document.getElementById('pwModal').classList.remove('hidden');
+      document.getElementById('inputPw').focus();
+    }
+    
+    function closePwModal() {
+      document.getElementById('pwModal').classList.add('hidden');
+    }
+    
+    function checkPw() {
+      const pw = document.getElementById('inputPw').value;
+      if (pw === TEACHER_PW) {
+        closePwModal();
+        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('completeView').classList.add('hidden');
+        document.getElementById('teacherView').classList.remove('hidden');
+        window.scrollTo(0, 0);
+        fetchData(); // 대시보드 열면서 데이터 로딩
+      } else {
+        alert('비밀번호가 일치하지 않습니다.');
+        document.getElementById('inputPw').value = '';
+      }
+    }
+    
+    function exitTeacherMode() {
+      document.getElementById('teacherView').classList.add('hidden');
+      document.getElementById('studentView').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    // [3] 대시보드 데이터 서버에서 불러오기 (GET)
+    async function fetchData() {
+      if (!SCRIPT_URL || SCRIPT_URL.includes("여기에_구글")) return;
+      
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-500 font-bold">클라우드 서버에서 실시간 데이터를 불러오는 중입니다...</td></tr>';
+      
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+        
+        studentDataList = data; // 다운로드를 위해 저장
+        tbody.innerHTML = '';
+
+        if (data.length <= 1) { // 시트에 제목줄 1줄밖에 없을 경우
+          tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-500 font-bold">아직 제출한 학생의 데이터가 없습니다.</td></tr>';
+          return;
+        }
+
+        // 최신 제출자가 위로 오도록 역순(Reverse) 출력 (index 0번인 헤더 제외)
+        for (let i = data.length - 1; i >= 1; i--) {
+          const row = data[i];
+          const tr = document.createElement('tr');
+          tr.className = "border-b hover:bg-slate-50 transition";
+          tr.innerHTML = `
+            <td class="p-3 text-xs text-slate-500 whitespace-nowrap">${row[0]}</td>
+            <td class="p-3 font-bold text-slate-900">${row[1]}</td>
+            <td class="p-3 font-bold text-slate-900">${row[2]}</td>
+            <td class="p-3 text-xs text-slate-700 whitespace-pre-wrap">${escapeHTML(row[3])}</td>
+            <td class="p-3 text-xs text-slate-700 whitespace-pre-wrap">${escapeHTML(row[4])}</td>
+            <td class="p-3 text-xs text-slate-700 whitespace-pre-wrap">${escapeHTML(row[5])}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">데이터를 불러오지 못했습니다. 네트워크 연결을 확인해주세요.</td></tr>';
+      }
+    }
+
+    // 보안 특수문자 처리
+    function escapeHTML(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    
+    // 엑셀 다운로드 특수문자, 따옴표, 줄바꿈 처리
+    function escapeCSV(text) {
+      if (text === null || text === undefined) return '""';
+      let str = String(text).replace(/"/g, '""');
+      return `"${str}"`;
+    }
+
+    // [4] 엑셀(CSV) 다운로드 함수
+    function downloadCSV() {
+      if (!studentDataList || studentDataList.length <= 1) {
+        alert("다운로드할 수 있는 학생 데이터가 없습니다.");
+        return;
+      }
+
+      let csvRows = [];
+      
+      // 구글 시트에서 가져온 배열을 CSV 형식으로 변환
+      studentDataList.forEach(row => {
+        const rowData = row.map(cell => escapeCSV(cell));
+        csvRows.push(rowData.join(","));
+      });
+
+      // 엑셀에서 한글이 깨지지 않도록 BOM (\uFEFF) 반드시 추가
+      const csvString = "\uFEFF" + csvRows.join("\r\n");
+      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `한국지리탐구_수행평가결과_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
